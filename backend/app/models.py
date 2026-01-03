@@ -9,11 +9,11 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
 
+class UserProgress(Base):
+    __tablename__ = "user_progress"
 
-class Roadmap(Base):
-    __tablename__ = "roadmaps"
-
-    id = Column(Integer, primary_key=True)
-    skill = Column(String, index=True)
-    title = Column(String)
-    description = Column(String)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    skill = Column(String)
+    phase = Column(Integer)
+    completed = Column(Integer, default=0)

@@ -1,35 +1,39 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios";
 import { AuthContext } from "./AuthContext";
+import api from "../api/axios";
 
-export function AuthProvider({ children }) {
+export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-  };
-
-  const fetchUser = async () => {
-    try {
-      const res = await api.get("/me");
-      setUser(res.data);
-    } catch {
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) fetchUser();
-    else setLoading(false);
+
+    if (!token) {
+      setTimeout(() => setLoading(false), 0);
+      return;
+    }
+
+    api
+      .get("/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch(() => {
+        localStorage.removeItem("token");
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

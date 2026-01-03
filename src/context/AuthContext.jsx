@@ -1,41 +1,44 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import api from "../api/axios";
 
-const AuthContext = createContext(null);
+import { useEffect, useState } from "react";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-  };
-
   useEffect(() => {
+    let mounted = true;
     const token = localStorage.getItem("token");
+
     if (!token) {
-      setLoading(false);
+      setTimeout(() => {
+        if (mounted) setLoading(false);
+      }, 0);
       return;
     }
 
-    api.get("/me")
-      .then((res) => setUser(res.data))
-      .catch(() => logout())
-      .finally(() => setLoading(false));
+    api
+      .get("/me")
+      .then((res) => {
+        if (mounted) setUser(res.data);
+      })
+      .catch(() => {
+        localStorage.removeItem("token");
+        if (mounted) setUser(null);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-  return ctx;
 }

@@ -12,20 +12,27 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+  e.preventDefault();
+  setError("");
 
-    try {
-      const res = await api.post("/login", { email, password });
+  try {
+    const res = await api.post("/login", { email, password });
 
-      localStorage.setItem("token", res.data.access_token);
-      setUser(res.data.user);
+    localStorage.setItem("token", res.data.access_token);
 
-      navigate("/home"); // ✅ redirect
-    } catch (err) {
-      setError("Invalid email or password");
-    }
-  };
+    setUser({
+      name: res.data.user.name,
+      email: res.data.user.email,
+    });
+
+    navigate("/home");
+  } catch (err) {
+    setError(
+      err.response?.data?.detail || "Invalid email or password"
+    );
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

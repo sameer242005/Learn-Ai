@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-from jose import jwt, JWTError
+from jose import jwt
 
-SECRET_KEY = "SECRET123"
+SECRET_KEY = "supersecretkey"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -13,7 +13,6 @@ def create_access_token(data: dict):
 
 def decode_access_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except:
         return None
